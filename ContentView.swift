@@ -1,131 +1,136 @@
 import SwiftUI
 
-struct ContentView: View {
-    @State private var page = 0
-    @State private var enabled: [String: Bool] = [
-        "Aimbot": false, "Draw FOV Circle": true, "Ignore Bots": false,
-        "Ignore Knocked": true, "Aim Silent": false,
-        "Tracelines": true, "2D Box": true, "Health Bar": true,
-        "Player Nickname": false, "Distance Meter": false,
-        "Live Player Counter": true, "ESP Skeleton": false,
-        "Anti-Ban (demo)": false
-    ]
-    @State private var fov = 33.0
-    @State private var speed = 2000.0
-    @State private var distance = 230.0
-    @State private var aimPosition = "Neck"
-    private let cyan = Color(red: 0.30, green: 0.73, blue: 0.78)
-    private let ink = Color(red: 0.07, green: 0.07, blue: 0.10)
-
-    var body: some View {
-        ZStack {
-            LinearGradient(colors: [ink, Color(red: 0.16, green: 0.08, blue: 0.22), ink],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-            VStack(spacing: 0) {
-                HStack(spacing: 10) {
-                    Image(systemName: "gearshape.fill").foregroundStyle(cyan).font(.title2)
-                    Text("Foxes ext V3").font(.title2.bold()).foregroundStyle(cyan)
-                    Spacer()
-                    Button { } label: {
-                        Image(systemName: "xmark").font(.title3.bold()).foregroundStyle(.white)
-                    }
-                }
-                .padding(18)
-                .background(Color.white.opacity(0.07))
-
-                HStack(spacing: 10) {
-                    tab("AIMBOT", index: 0)
-                    tab("ESP", index: 1)
-                    tab("SETTINGS", index: 2)
-                }
-                .padding(12)
-
-                ScrollView {
-                    VStack(spacing: 0) {
-                        if page == 0 {
-                            toggleRow("Aimbot")
-                            toggleRow("Draw FOV Circle")
-                            toggleRow("Ignore Bots")
-                            toggleRow("Ignore Knocked")
-                            toggleRow("Aim Silent")
-                            sliderRow("FOV Radius", value: $fov, range: 1...180, suffix: " px")
-                            sliderRow("Aim Speed", value: $speed, range: 0...2000, suffix: "")
-                            sliderRow("Aim Distance", value: $distance, range: 1...500, suffix: " m")
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Aim Position").font(.headline)
-                                Picker("Aim Position", selection: $aimPosition) {
-                                    ForEach(["Head", "Neck", "Chest", "U.Head"], id: \.self) {
-                                        Text($0).tag($0)
-                                    }
-                                }.pickerStyle(.segmented)
-                            }.padding(16)
-                        } else if page == 1 {
-                            toggleRow("Tracelines")
-                            toggleRow("2D Box")
-                            toggleRow("Health Bar")
-                            toggleRow("Player Nickname")
-                            toggleRow("Distance Meter")
-                            toggleRow("Live Player Counter")
-                            toggleRow("ESP Skeleton")
-                            Text("ESP ở đây chỉ là mục giao diện minh họa.")
-                                .font(.footnote).foregroundStyle(.white.opacity(0.6))
-                                .frame(maxWidth: .infinity, alignment: .leading).padding(16)
-                        } else {
-                            toggleRow("Anti-Ban (demo)")
-                            Text("Mục minh họa בלבד — không có khả năng chống ban thực tế.")
-                                .font(.footnote).foregroundStyle(.white.opacity(0.65))
-                                .frame(maxWidth: .infinity, alignment: .leading).padding(16)
-                        }
-                    }
-                }
-                Text("UI DEMO • Không tác động vào game")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.45))
-                    .padding(.vertical, 12)
-            }
-            .background(Color(red: 0.10, green: 0.10, blue: 0.13).opacity(0.97))
-            .clipShape(RoundedRectangle(cornerRadius: 22))
-            .overlay(RoundedRectangle(cornerRadius: 22).stroke(cyan.opacity(0.35), lineWidth: 1))
-            .padding()
-        }
-        .preferredColorScheme(.dark)
-    }
-
-    private func tab(_ title: String, index: Int) -> some View {
-        Button { page = index } label: {
-            Text(title).font(.caption.bold())
-                .frame(maxWidth: .infinity).padding(.vertical, 11)
-                .background(page == index ? cyan : Color.white.opacity(0.07))
-                .foregroundStyle(page == index ? ink : .white)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-    }
-
-    private func toggleRow(_ title: String) -> some View {
-        Toggle(isOn: Binding(
-            get: { enabled[title, default: false] },
-            set: { enabled[title] = $0 }
-        )) {
-            Text(title).font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
-        }
-        .tint(cyan)
-        .padding(.horizontal, 16).padding(.vertical, 12)
-        .overlay(alignment: .bottom) { Rectangle().fill(.white.opacity(0.08)).frame(height: 1) }
-    }
-
-    private func sliderRow(_ title: String, value: Binding<Double>,
-                           range: ClosedRange<Double>, suffix: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(title) · \(Int(value.wrappedValue))\(suffix)")
-                .font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
-            Slider(value: value, in: range).tint(cyan)
-        }
-        .padding(.horizontal, 16).padding(.vertical, 12)
-        .overlay(alignment: .bottom) { Rectangle().fill(.white.opacity(0.08)).frame(height: 1) }
+@main
+struct FFMenuDemoApp: App {
+    var body: some Scene {
+        WindowGroup { ContentView() }
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView: View {
+    @State private var tab = 0
+    @State private var aimbot = false
+    @State private var esp = true
+    @State private var name = true
+    @State private var line = false
+    @State private var box = true
+    @State private var skeleton = false
+    @State private var ignoreBots = true
+    @State private var fov: Double = 120
+    @State private var speed: Double = 50
+
+    private let purple = Color(red: 0.72, green: 0.30, blue: 1.0)
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.035, green: 0.035, blue: 0.055).ignoresSafeArea()
+            VStack(spacing: 16) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("FOXES").font(.system(size: 27, weight: .black, design: .rounded)).foregroundStyle(.white)
+                        Text("UI DEMO  •  iOS").font(.caption2.weight(.bold)).tracking(2).foregroundStyle(purple)
+                    }
+                    Spacer()
+                    Text("V3").font(.headline.bold()).foregroundStyle(purple)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(purple.opacity(0.13)).clipShape(Capsule())
+                }
+                HStack(spacing: 8) {
+                    tabButton("AIM", index: 0)
+                    tabButton("ESP", index: 1)
+                    tabButton("SETTINGS", index: 2)
+                }
+                ScrollView {
+                    VStack(spacing: 12) {
+                        if tab == 0 {
+                            section("AIM ASSIST — DEMO") {
+                                toggleRow("Aimbot (UI only)", detail: "Does not control the game", value: $aimbot)
+                                toggleRow("Ignore bots", detail: nil, value: $ignoreBots)
+                                sliderRow("FOV Radius", value: $fov, range: 10...300, suffix: "")
+                                sliderRow("Aim Speed", value: $speed, range: 1...100, suffix: "%")
+                                choiceRow("Aim position", choices: ["Head", "Neck", "Chest"])
+                            }
+                        } else if tab == 1 {
+                            section("ESP — VISUAL DEMO") {
+                                toggleRow("ESP overlay (UI only)", detail: "No game overlay is connected", value: $esp)
+                                toggleRow("Player nickname", detail: nil, value: $name)
+                                toggleRow("Tracer lines", detail: nil, value: $line)
+                                toggleRow("2D box", detail: nil, value: $box)
+                                toggleRow("Skeleton", detail: nil, value: $skeleton)
+                            }
+                        } else {
+                            section("SETTINGS") {
+                                toggleRow("Anti-ban status (demo)", detail: "Informational only; no protection", value: .constant(false))
+                                HStack {
+                                    Text("Theme").foregroundStyle(.white)
+                                    Spacer()
+                                    Text("Neon Purple").foregroundStyle(purple).fontWeight(.semibold)
+                                }.padding(.vertical, 7)
+                                Text("This app is a standalone UI mockup. It does not modify Free Fire, provide cheats, or prevent bans.")
+                                    .font(.footnote).foregroundStyle(.white.opacity(0.55))
+                            }
+                        }
+                    }.padding(.bottom, 12)
+                }
+                Text("STANDALONE MOCKUP • NOT CONNECTED TO FREE FIRE")
+                    .font(.system(size: 9, weight: .bold)).tracking(1)
+                    .foregroundStyle(.white.opacity(0.35))
+            }.padding(18)
+        }.preferredColorScheme(.dark)
+    }
+
+    private func tabButton(_ title: String, index: Int) -> some View {
+        Button { tab = index } label: {
+            Text(title).font(.system(size: 11, weight: .heavy)).tracking(1)
+                .frame(maxWidth: .infinity).padding(.vertical, 13)
+                .foregroundStyle(tab == index ? .black : .white.opacity(0.65))
+                .background(tab == index ? purple : Color.white.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 13) {
+            Text(title).font(.caption.weight(.heavy)).tracking(1.5).foregroundStyle(purple)
+            content()
+        }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(0.045))
+            .overlay(RoundedRectangle(cornerRadius: 17).stroke(purple.opacity(0.25), lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 17))
+    }
+
+    private func toggleRow(_ title: String, detail: String?, value: Binding<Bool>) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                if let detail { Text(detail).font(.caption2).foregroundStyle(.white.opacity(0.45)) }
+            }
+            Spacer()
+            Toggle("", isOn: value).labelsHidden().tint(purple).scaleEffect(0.85, anchor: .trailing)
+        }.padding(.vertical, 3)
+    }
+
+    private func sliderRow(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title).foregroundStyle(.white).font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("\(Int(value.wrappedValue))\(suffix)").foregroundStyle(purple).font(.subheadline.bold())
+            }
+            Slider(value: value, in: range).tint(purple)
+        }.padding(.vertical, 3)
+    }
+
+    private func choiceRow(_ title: String, choices: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).foregroundStyle(.white).font(.subheadline.weight(.semibold))
+            HStack(spacing: 8) {
+                ForEach(choices, id: \.self) { choice in
+                    Text(choice).font(.caption.bold()).frame(maxWidth: .infinity).padding(.vertical, 10)
+                        .background(choice == "Head" ? purple.opacity(0.28) : Color.white.opacity(0.06))
+                        .foregroundStyle(.white).clipShape(RoundedRectangle(cornerRadius: 9))
+                }
+            }
+        }
+    }
 }
